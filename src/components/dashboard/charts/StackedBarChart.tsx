@@ -1,20 +1,9 @@
 'use client'
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
+import { useMemo } from 'react'
+import { EChartWrapper } from '@/components/molecules/echart-wrapper'
+import type { EChartsOption } from '@/components/molecules/echart-wrapper'
+import { CHART_COLORS } from '@/lib/design-tokens'
 
 export type StackedBarDataPoint = Record<string, string | number>
 
@@ -41,97 +30,40 @@ export function StackedBarChart({
   series,
   xKey,
   height = 280,
-  layout = 'horizontal',
   yFormatter,
   showGrid = true,
   showLegend = true,
   borderRadius = 4,
 }: StackedBarChartProps) {
-  const config: ChartConfig = Object.fromEntries(
-    series.map((s, i) => [
-      s.key,
-      {
-        label: s.label,
-        color: s.color ?? `var(--chart-${(i % 5) + 1})`,
+  const option = useMemo<EChartsOption>(() => ({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: showLegend ? { bottom: 0, icon: 'rect', itemWidth: 10, textStyle: { fontSize: 12 } } : undefined,
+    grid: { top: 8, right: 8, bottom: showLegend ? 40 : 8, left: 8, containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: data.map((d) => d[xKey]),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 12, color: '#94A3B8' },
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 12, color: '#94A3B8', formatter: yFormatter ? (v: number) => yFormatter(v) : undefined },
+      splitLine: showGrid ? { lineStyle: { type: 'dashed', color: '#E2E8F0' } } : { show: false },
+    },
+    series: series.map((s, i) => ({
+      name: s.label,
+      type: 'bar' as const,
+      stack: 'total',
+      data: data.map((d) => d[s.key]),
+      itemStyle: {
+        color: s.color ?? CHART_COLORS[i % CHART_COLORS.length],
+        borderRadius: i === series.length - 1 ? [borderRadius, borderRadius, 0, 0] : undefined,
       },
-    ])
-  )
+    })),
+  }), [data, series, xKey, yFormatter, showGrid, showLegend, borderRadius])
 
-  const isVertical = layout === 'vertical'
-
-  return (
-    <ChartContainer config={config} className="w-full" style={{ height }}>
-      <BarChart
-        data={data}
-        layout={layout}
-        margin={{
-          top: 8,
-          right: 8,
-          bottom: 0,
-          left: isVertical ? 80 : -8,
-        }}
-        barCategoryGap="20%"
-      >
-        {showGrid && (
-          <CartesianGrid
-            strokeDasharray="3 3"
-            horizontal={!isVertical}
-            vertical={isVertical}
-          />
-        )}
-        {isVertical ? (
-          <>
-            <XAxis
-              type="number"
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={yFormatter}
-            />
-            <YAxis
-              type="category"
-              dataKey={xKey}
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-              width={72}
-            />
-          </>
-        ) : (
-          <>
-            <XAxis
-              dataKey={xKey}
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={yFormatter}
-            />
-          </>
-        )}
-        <ChartTooltip content={<ChartTooltipContent />} />
-        {showLegend && (
-          <ChartLegend content={<ChartLegendContent />} />
-        )}
-        {series.map((s, i) => (
-          <Bar
-            key={s.key}
-            dataKey={s.key}
-            name={s.key}
-            stackId="stack"
-            fill={`var(--color-${s.key})`}
-            radius={
-              i === series.length - 1
-                ? [borderRadius, borderRadius, 0, 0]
-                : [0, 0, 0, 0]
-            }
-          />
-        ))}
-      </BarChart>
-    </ChartContainer>
-  )
+  return <EChartWrapper option={option} height={height} />
 }

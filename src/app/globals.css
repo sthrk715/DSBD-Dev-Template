@@ -453,13 +453,6 @@
   .hover-lift {
     @apply transition-transform duration-200 hover:-translate-y-0.5;
   }
-  /* Recharts overrides */
-  .recharts-tooltip-wrapper {
-    @apply !outline-hidden;
-  }
-  .recharts-default-tooltip {
-    @apply !rounded-xl !border-gray-100 !shadow-lg !text-sm;
-  }
 
   /* MegaMenu slide-down */
   .animate-slide-down {

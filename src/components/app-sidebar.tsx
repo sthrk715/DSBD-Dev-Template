@@ -6,12 +6,16 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboardIcon,
   BarChart2Icon,
-  FileTextIcon,
+  RepeatIcon,
   UsersIcon,
   UserCircleIcon,
   SettingsIcon,
   LogOutIcon,
+  MousePointerClickIcon,
+  GiftIcon,
   PackageIcon,
+  MailIcon,
+  CalendarRangeIcon,
 } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
@@ -27,12 +31,16 @@ import {
   SidebarGroupLabel,
 } from "@/components/ui/sidebar"
 
-const NAV_MAIN = [
-  { title: "ダッシュボード", href: "/dashboard",  icon: LayoutDashboardIcon },
-  { title: "売上分析",       href: "/analytics",  icon: BarChart2Icon },
-  { title: "商品管理",       href: "/products",   icon: PackageIcon },
-  { title: "顧客分析",       href: "/customers",  icon: UsersIcon },
-  { title: "レポート",       href: "/reports",    icon: FileTextIcon },
+const NAV_DASHBOARD = [
+  { title: "エグゼクティブサマリ",  href: "/dashboard",              icon: LayoutDashboardIcon },
+  { title: "チャネル別詳細",        href: "/dashboard/channels",     icon: BarChart2Icon },
+  { title: "サブスク分析",          href: "/dashboard/subscription", icon: RepeatIcon },
+  { title: "顧客分析",             href: "/dashboard/customers",    icon: UsersIcon },
+  { title: "アクセス・CVR分析",     href: "/dashboard/access",       icon: MousePointerClickIcon },
+  { title: "ギフト売上",            href: "/dashboard/gift",         icon: GiftIcon },
+  { title: "商品カテゴリ別売上",     href: "/dashboard/products",     icon: PackageIcon },
+  { title: "メルマガ分析",          href: "/dashboard/email",        icon: MailIcon },
+  { title: "時系列比較",            href: "/dashboard/timeseries",   icon: CalendarRangeIcon },
 ]
 
 const NAV_SETTINGS = [
@@ -43,7 +51,7 @@ const NAV_SETTINGS = [
 
 const user = {
   name: "User Name",
-  email: "user@anymindgroup.com",
+  email: "user@example.com",
   avatar: "",
 }
 
@@ -59,11 +67,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-2">
               <Link href="/dashboard" className="flex items-center gap-2">
                 <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                  <rect x="2" y="2" width="28" height="28" rx="6" fill="#2563EB" />
+                  <rect x="2" y="2" width="28" height="28" rx="6" fill="#1A1A1A" />
                   <path d="M9 22V14l7-4 7 4v8l-7 4-7-4z" fill="white" fillOpacity="0.9" />
-                  <path d="M16 10v12M9 14l7 4 7-4" stroke="#2563EB" strokeWidth="1.5" fill="none" />
+                  <path d="M16 10v12M9 14l7 4 7-4" stroke="#1A1A1A" strokeWidth="1.5" fill="none" />
                 </svg>
-                <span className="text-base font-bold tracking-tight">EC Store</span>
+                <span className="text-base font-bold tracking-tight">Soup Stock Tokyo</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -73,11 +81,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* ── ナビゲーション ─────────────────────────── */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel>ダッシュボード</SidebarGroupLabel>
           <SidebarMenu>
-            {NAV_MAIN.map((item) => {
+            {NAV_DASHBOARD.map((item) => {
               const Icon = item.icon
-              const active = pathname === item.href || pathname.startsWith(item.href + "/")
+              const active =
+                item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname === item.href || pathname.startsWith(item.href + "/")
               return (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild isActive={active}>
@@ -93,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupLabel>管理</SidebarGroupLabel>
           <SidebarMenu>
             {NAV_SETTINGS.map((item) => {
               const Icon = item.icon

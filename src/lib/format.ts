@@ -1,3 +1,9 @@
+export const fmtYen = (v: number) => `¥${v.toLocaleString()}`
+export const fmtYenK = (v: number) => `¥${(v / 1000).toFixed(0)}k`
+export const fmtYenMan = (v: number) => `¥${(v / 10000).toFixed(0)}万`
+export const fmtPct = (v: number) => `${v.toFixed(1)}%`
+export const fmtCount = (v: number) => v.toLocaleString()
+
 export function formatDate(
   date: Date | string | number | undefined,
   opts: Intl.DateTimeFormatOptions = {}

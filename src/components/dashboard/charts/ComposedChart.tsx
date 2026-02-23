@@ -1,21 +1,9 @@
 'use client'
 
-import {
-  Bar,
-  CartesianGrid,
-  ComposedChart as RechartsComposedChart,
-  Line,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
+import { useMemo } from 'react'
+import { EChartWrapper } from '@/components/molecules/echart-wrapper'
+import type { EChartsOption } from '@/components/molecules/echart-wrapper'
+import { CHART_COLORS } from '@/lib/design-tokens'
 
 export type ComposedDataPoint = Record<string, string | number>
 
@@ -24,7 +12,6 @@ export type ComposedSeries = {
   label: string
   type: 'bar' | 'line'
   color?: string
-  /** line 用: 右Y軸を使用するか */
   yAxisId?: 'left' | 'right'
 }
 
@@ -53,85 +40,60 @@ export function ComposedChartComponent({
   showRightAxis = false,
   barRadius = 4,
 }: ComposedChartProps) {
-  const config: ChartConfig = Object.fromEntries(
-    series.map((s, i) => [
-      s.key,
+  const hasRightAxis = showRightAxis || series.some((s) => s.yAxisId === 'right')
+
+  const option = useMemo<EChartsOption>(() => ({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    legend: showLegend ? { bottom: 0, icon: 'circle', itemWidth: 8, textStyle: { fontSize: 12 } } : undefined,
+    grid: { top: 8, right: hasRightAxis ? 60 : 8, bottom: showLegend ? 40 : 8, left: 8, containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: data.map((d) => d[xKey]),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 12, color: '#94A3B8' },
+    },
+    yAxis: [
       {
-        label: s.label,
-        color: s.color ?? `var(--chart-${(i % 5) + 1})`,
+        type: 'value',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { fontSize: 12, color: '#94A3B8', formatter: yFormatter ? (v: number) => yFormatter(v) : undefined },
+        splitLine: showGrid ? { lineStyle: { type: 'dashed', color: '#E2E8F0' } } : { show: false },
       },
-    ])
-  )
+      ...(hasRightAxis ? [{
+        type: 'value' as const,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { fontSize: 12, color: '#94A3B8', formatter: (yRightFormatter ?? yFormatter) ? (v: number) => (yRightFormatter ?? yFormatter)!(v) : undefined },
+        splitLine: { show: false },
+      }] : []),
+    ],
+    series: series.map((s, i) => {
+      const color = s.color ?? CHART_COLORS[i % CHART_COLORS.length]
+      const yAxisIndex = s.yAxisId === 'right' ? 1 : 0
+      if (s.type === 'bar') {
+        return {
+          name: s.label,
+          type: 'bar' as const,
+          yAxisIndex,
+          data: data.map((d) => d[s.key]),
+          itemStyle: { color, borderRadius: [barRadius, barRadius, 0, 0] },
+          barMaxWidth: 32,
+        }
+      }
+      return {
+        name: s.label,
+        type: 'line' as const,
+        yAxisIndex,
+        data: data.map((d) => d[s.key]),
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 2, color },
+        itemStyle: { color },
+      }
+    }),
+  }), [data, series, xKey, yFormatter, yRightFormatter, showGrid, showLegend, hasRightAxis, barRadius])
 
-  const hasRightAxis =
-    showRightAxis || series.some((s) => s.yAxisId === 'right')
-
-  return (
-    <ChartContainer config={config} className="w-full" style={{ height }}>
-      <RechartsComposedChart
-        data={data}
-        margin={{ top: 8, right: hasRightAxis ? 8 : 8, bottom: 0, left: -8 }}
-      >
-        {showGrid && (
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        )}
-        <XAxis
-          dataKey={xKey}
-          tick={{ fontSize: 12 }}
-          tickLine={false}
-          axisLine={false}
-        />
-        <YAxis
-          yAxisId="left"
-          tick={{ fontSize: 12 }}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={yFormatter}
-        />
-        {hasRightAxis && (
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            tick={{ fontSize: 12 }}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={yRightFormatter ?? yFormatter}
-          />
-        )}
-        <ChartTooltip content={<ChartTooltipContent />} />
-        {showLegend && (
-          <ChartLegend content={<ChartLegendContent />} />
-        )}
-        {series.map((s) => {
-          const axisId = s.yAxisId ?? 'left'
-          if (s.type === 'bar') {
-            return (
-              <Bar
-                key={s.key}
-                dataKey={s.key}
-                name={s.key}
-                yAxisId={axisId}
-                fill={`var(--color-${s.key})`}
-                radius={[barRadius, barRadius, 0, 0]}
-                barSize={32}
-              />
-            )
-          }
-          return (
-            <Line
-              key={s.key}
-              type="monotone"
-              dataKey={s.key}
-              name={s.key}
-              yAxisId={axisId}
-              stroke={`var(--color-${s.key})`}
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0 }}
-            />
-          )
-        })}
-      </RechartsComposedChart>
-    </ChartContainer>
-  )
+  return <EChartWrapper option={option} height={height} />
 }

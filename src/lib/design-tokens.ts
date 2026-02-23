@@ -40,25 +40,36 @@ export const KPI_GRADIENTS = [
 
 export type KpiGradient = (typeof KPI_GRADIENTS)[number]
 
+/** 4チャネル定義 */
+export const EC_CHANNELS = [
+  { key: 'shopify',  label: 'Shopify自社EC',     color: '#1A1A1A' },
+  { key: 'amazon',   label: 'Amazon',             color: '#404040' },
+  { key: 'rakuten',  label: '楽天市場',            color: '#666666' },
+  { key: 'yahoo',    label: 'Yahoo!ショッピング',  color: '#8C8C8C' },
+] as const
+
+export type ChannelKey = (typeof EC_CHANNELS)[number]['key']
+
 /** アイコンキーの型 */
 export type IconKey =
-  | 'dashboard'
-  | 'analytics'
-  | 'report'
-  | 'users'
-  | 'profile'
-  | 'settings'
+  | 'dashboard' | 'channels' | 'subscription' | 'customers'
+  | 'access' | 'gift' | 'products' | 'email' | 'timeseries'
+  | 'analytics' | 'report' | 'users' | 'profile' | 'settings'
 
 /** サイドバーナビゲーション定義 — 書き換えてメニュー構造を変更 */
 export const SIDEBAR_NAV = [
   {
-    section: 'メイン',
+    section: 'ダッシュボード',
     items: [
-      { label: 'ダッシュボード', href: '/dashboard',  iconKey: 'dashboard' as IconKey },
-      { label: '売上分析',       href: '/analytics',  iconKey: 'analytics'  as IconKey },
-      { label: '商品管理',       href: '/products',   iconKey: 'report'     as IconKey },
-      { label: '顧客分析',       href: '/customers',  iconKey: 'users'      as IconKey },
-      { label: 'レポート',       href: '/reports',    iconKey: 'report'     as IconKey },
+      { label: 'エグゼクティブサマリ',  href: '/dashboard',              iconKey: 'dashboard' as IconKey },
+      { label: 'チャネル別詳細',        href: '/dashboard/channels',     iconKey: 'channels' as IconKey },
+      { label: 'サブスク分析',          href: '/dashboard/subscription', iconKey: 'subscription' as IconKey },
+      { label: '顧客分析',             href: '/dashboard/customers',    iconKey: 'customers' as IconKey },
+      { label: 'アクセス・CVR分析',     href: '/dashboard/access',       iconKey: 'access' as IconKey },
+      { label: 'ギフト売上',            href: '/dashboard/gift',         iconKey: 'gift' as IconKey },
+      { label: '商品カテゴリ別売上',     href: '/dashboard/products',     iconKey: 'products' as IconKey },
+      { label: 'メルマガ分析',          href: '/dashboard/email',        iconKey: 'email' as IconKey },
+      { label: '時系列比較',            href: '/dashboard/timeseries',   iconKey: 'timeseries' as IconKey },
     ],
   },
   {
@@ -74,11 +85,11 @@ export const SIDEBAR_NAV = [
 /** アプリ設定 — ブランドカスタマイズはここを書き換える */
 export const APP_CONFIG = {
   /** アプリ名 (TopNavのタイトル等に使用) */
-  name: 'EC Store Dashboard',
+  name: 'EC統合ダッシュボード',
   /** ロゴ内略称 (2〜3文字) */
-  shortName: 'EC',
+  shortName: 'SST',
   /** サブタイトル */
-  description: 'ECサイト売上管理ダッシュボード',
+  description: 'Soup Stock Tokyo EC統合ダッシュボード',
 } as const
 
 /** テーブルのページあたり行数オプション */

@@ -2,15 +2,20 @@
 
 ## チャートライブラリ
 
-- ライブラリ: **Recharts** (React向け宣言的チャートライブラリ)
-- 使用グラフ種別:
+- ライブラリ: **Apache ECharts** (ヒートマップ・markLine/markArea・dataZoom対応)
+- テーブル: **TanStack Table v8** (ソート・フィルタ・ページネーション)
 
-| グラフ種別 | コンポーネント | 用途 | データソース (mart層) |
-|-----------|-------------|------|---------------------|
-| 折れ線グラフ | LineChart | 日次売上トレンド | mart_sales_daily |
-| 棒グラフ | BarChart | 月次比較・セグメント比較 | mart_sales_monthly, mart_customer_segments |
-| 円グラフ | PieChart | カテゴリ構成比 | mart_category_summary |
-| エリアチャート | AreaChart | 累積売上推移 | mart_sales_daily |
+| グラフ種別 | ECharts series type | 用途 | データソース (mart層) |
+|-----------|-------------------|------|---------------------|
+| 折れ線グラフ | line | 日次売上トレンド、比較グラフ | mart.daily_sales_summary, mart.time_series_comparison |
+| 棒グラフ | bar | チャネル別比較、月次比較 | mart.daily_sales_summary |
+| 面グラフ | line (areaStyle) | 契約者数推移、チャネル構成比推移 | mart.subscription_analysis |
+| ドーナツチャート | pie (radius) | チャネル構成比、eギフト構成比 | mart.daily_sales_summary |
+| ヒートマップ | heatmap | コホート分析リテンション | mart.subscription_cohort |
+| ゲージ | gauge | ギフトシーズン進捗 | mart.gift_seasonal_sales |
+| markArea | series.markArea | 販促イベント期間の帯表示 | mart.event_enriched_daily |
+| markLine | series.markLine | アドホックイベントの縦線表示 | mart.event_enriched_daily |
+| dataZoom | dataZoom (slider) | 期間スクロール | - |
 
 ## コンポーネント設計
 
@@ -22,13 +27,11 @@ src/
 │   ├── ui/                    # shadcn/ui基盤（Atoms）
 │   │   ├── button.tsx
 │   │   ├── card.tsx
-│   │   ├── input.tsx
 │   │   ├── select.tsx
 │   │   ├── popover.tsx
 │   │   ├── calendar.tsx
-│   │   ├── checkbox.tsx
 │   │   ├── toggle-group.tsx
-│   │   ├── command.tsx
+│   │   ├── tabs.tsx
 │   │   └── ...
 │   ├── atoms/                 # プロジェクト固有Atoms
 │   │   ├── kpi-value.tsx
@@ -36,20 +39,32 @@ src/
 │   │   └── status-badge.tsx
 │   ├── molecules/             # Molecules
 │   │   ├── kpi-card.tsx
-│   │   ├── filter-select.tsx         # → セレクタ仕様: ui/components/selector-spec.md
-│   │   ├── filter-multi-select.tsx   # → 同上
-│   │   ├── date-range-picker.tsx     # → 同上
-│   │   ├── period-selector.tsx       # → 同上
-│   │   └── searchable-select.tsx     # → 同上
+│   │   ├── filter-select.tsx         # チャネルセレクタ
+│   │   ├── date-range-picker.tsx     # 期間選択
+│   │   ├── period-selector.tsx       # 日次/週次/月次
+│   │   ├── compare-mode-toggle.tsx   # 暦日/同曜日
+│   │   ├── season-selector.tsx       # ギフトシーズン（タブ6用）
+│   │   └── echart-wrapper.tsx        # ECharts共通ラッパー
 │   ├── organisms/             # Organisms
-│   │   ├── dashboard-header.tsx
+│   │   ├── filter-bar.tsx     # 共通フィルタバー
+│   │   ├── tab-navigation.tsx # 9タブナビゲーション
 │   │   ├── chart-container.tsx
-│   │   ├── filter-bar.tsx     # 全セレクタを統合配置
-│   │   └── data-table.tsx
+│   │   ├── data-table.tsx     # TanStack Table
+│   │   ├── cohort-heatmap.tsx # コホートヒートマップ
+│   │   └── gift-progress-gauge.tsx # ギフト進捗ゲージ
 │   ├── templates/             # Templates
-│   │   ├── dashboard-layout.tsx
+│   │   ├── dashboard-layout.tsx  # サイドバー + タブ + フィルタバー + メインコンテンツ
 │   │   └── settings-layout.tsx
 │   └── pages/                 # Pages（App Routerのpage.tsx）
+│       ├── tab-executive.tsx
+│       ├── tab-channels.tsx
+│       ├── tab-subscription.tsx
+│       ├── tab-customers.tsx
+│       ├── tab-access.tsx
+│       ├── tab-gifts.tsx
+│       ├── tab-products.tsx
+│       ├── tab-email.tsx
+│       └── tab-timeseries.tsx
 ```
 
 **セレクタコンポーネント詳細仕様:** `docs/02_design/ui/components/selector-spec.md`
@@ -58,22 +73,24 @@ src/
 
 - **Zustand** を使用（軽量でボイラープレート最小）
 - ストア分割:
-  - `useFilterStore` - フィルタ状態（期間・チャネル・カテゴリ・地域・表示期間）
-  - `useUserStore` - ユーザー情報
-  - `useDashboardStore` - ダッシュボード設定
-- サーバー状態は **TanStack Query** で管理
+  - `useFilterStore` - 共通フィルタ状態（期間・チャネル・表示期間・比較モード）
+  - `useUserStore` - ユーザー情報・ロール
+- サーバー状態は **TanStack Query** で管理（キャッシュキーにフィルタ状態を含める）
 
 ### useFilterStore定義
 
 ```typescript
-// src/stores/filter-store.ts — 詳細: ui/components/selector-spec.md
+// src/stores/filter-store.ts
 interface FilterState {
   dateRange: { from: Date; to: Date }
-  preset: string             // last7d, last30d, last90d, thisMonth, lastMonth, thisQuarter, custom
-  channel: string            // web, store, api, '' (全て)
-  categoryL1: string         // 大カテゴリ, '' (全て)
-  regions: string[]          // 地域コード配列 ([] = 全て)
+  preset: string             // last7d, last30d, last90d, thisMonth, lastMonth, thisQuarter, thisYear, custom
+  channel: string            // all, shopify, amazon, rakuten, yahoo
   period: 'daily' | 'weekly' | 'monthly'
+  compareMode: 'calendar' | 'same_dow'
+  // タブ固有フィルタ
+  giftSeason: string         // all, mothers_day, chugen, keiro, seibo, fukubako（タブ6用）
+  comparison: string          // yoy, mom, wow, same_dow, y2y（タブ9用）
+  movingAvg: string           // none, 7d, 28d（タブ9用）
 }
 ```
 
@@ -81,40 +98,33 @@ interface FilterState {
 
 - URLクエリパラメータと連動（ブックマーク可能）
 - フィルタ変更時: 即時反映（DateRangePickerのみ「適用」ボタン付き）
-- デフォルト値: 直近30日、チャネル=全て、カテゴリ=全て、地域=全て、期間=日次
+- デフォルト値: 直近30日、チャネル=全て、期間=日次、比較モード=暦日
 - リセットボタン: 全フィルタをデフォルト値に戻す + URLパラメータクリア
 
 ```
-/dashboard/1?from=2026-01-15&to=2026-02-14&preset=last30d&channel=web&category=electronics&regions=JP-13,JP-27&period=daily
+/dashboard?from=2026-01-15&to=2026-02-14&channel=shopify&period=daily&compareMode=calendar&tab=executive
 ```
 
 ## KPIカード仕様
 
-4枚のKPIカードをダッシュボード上部に横並び表示。
-
-| # | KPI名 | 単位 | データソース | 表示例 |
-|---|-------|------|------------|--------|
-| 1 | 売上合計 | 円 | mart_kpi_summary (total_sales) | ¥12,500,000 (+5.2%) ↑ |
-| 2 | 注文件数 | 件 | mart_kpi_summary (order_count) | 1,847件 (-2.1%) ↓ |
-| 3 | ユニーク顧客数 | 人 | mart_kpi_summary (unique_customers) | 1,203人 (+8.7%) ↑ |
-| 4 | 平均注文額 | 円 | mart_kpi_summary (avg_order_value) | ¥6,768 (+0.3%) → |
+各タブ上部に3-5枚のKPIカードを横並び表示。タブごとに異なるKPIを表示。
 
 ### KPIカードコンポーネント
 
 ```
 ┌────────────────────┐
-│ 売上合計            │
+│ 全チャネル売上（税抜）│
 │ ¥12,500,000        │  ← text-2xl font-bold
-│ +5.2% ↑            │  ← text-green-600 (up) / text-red-600 (down) / text-gray-500 (flat)
-│ 前日比              │
+│ +12.5% ↑           │  ← text-green-600 (up) / text-red-600 (down) / text-gray-500 (flat)
+│ 前年比              │
 └────────────────────┘
 ```
 
 ## ダークモード対応
 
-- 初回リリースでは非対応（Phase 2で検討）
+- 初回リリースでは非対応
 - 実装方式: Tailwind CSS `dark:` プレフィックス
-- 切替: システム設定に追従 + 手動切替
+- ライト基調で固定
 
 ## アクセシビリティ要件
 
@@ -127,7 +137,6 @@ interface FilterState {
 | フォーカス表示 | 明確なフォーカスリング |
 | グラフの代替テキスト | sr-onlyで数値情報を提供 |
 | セレクタ操作 | キーボードナビゲーション対応（上下キー + Enter） |
-| タッチ操作 | タップ領域 44x44px以上 |
 
 ## 関連ドキュメント
 

@@ -343,7 +343,7 @@ export function AnyMindLogoIcon({ size = 24, className = '' }: IconProps) {
 }
 
 /** IconKey からアイコンコンポーネントを取得するマップ */
-export const ICON_MAP: Record<IconKey, React.ComponentType<IconProps>> = {
+export const ICON_MAP: Partial<Record<IconKey, React.ComponentType<IconProps>>> = {
   dashboard: DashboardIcon,
   analytics: AnalyticsIcon,
   report:    ReportIcon,

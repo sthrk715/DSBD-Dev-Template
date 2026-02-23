@@ -1,18 +1,9 @@
 'use client'
 
-import {
-  CartesianGrid,
-  Line,
-  LineChart as RechartsLineChart,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
+import { useMemo } from 'react'
+import { EChartWrapper } from '@/components/molecules/echart-wrapper'
+import type { EChartsOption } from '@/components/molecules/echart-wrapper'
+import { CHART_COLORS } from '@/lib/design-tokens'
 
 export type LineDataPoint = Record<string, string | number>
 
@@ -41,54 +32,38 @@ export function LineChartComponent({
   height = 280,
   yFormatter,
   showGrid = true,
-  curveType = 'monotone',
+  showLegend = true,
   showDots = false,
 }: LineChartComponentProps) {
-  const config: ChartConfig = Object.fromEntries(
-    series.map((s, i) => [
-      s.key,
-      {
-        label: s.label,
-        color: s.color ?? `var(--chart-${(i % 5) + 1})`,
-      },
-    ])
-  )
+  const option = useMemo<EChartsOption>(() => ({
+    tooltip: { trigger: 'axis' },
+    legend: showLegend ? { bottom: 0, icon: 'circle', itemWidth: 8, itemHeight: 8, textStyle: { fontSize: 12 } } : undefined,
+    grid: { top: 8, right: 8, bottom: showLegend ? 40 : 8, left: 8, containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: data.map((d) => d[xKey]),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 12, color: '#94A3B8' },
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 12, color: '#94A3B8', formatter: yFormatter ? (v: number) => yFormatter(v) : undefined },
+      splitLine: showGrid ? { lineStyle: { type: 'dashed', color: '#E2E8F0' } } : { show: false },
+    },
+    series: series.map((s, i) => ({
+      name: s.label,
+      type: 'line' as const,
+      data: data.map((d) => d[s.key]),
+      smooth: true,
+      symbol: showDots ? 'circle' : 'none',
+      symbolSize: showDots ? 6 : 0,
+      lineStyle: { width: 2, color: s.color ?? CHART_COLORS[i % CHART_COLORS.length] },
+      itemStyle: { color: s.color ?? CHART_COLORS[i % CHART_COLORS.length] },
+    })),
+  }), [data, series, xKey, yFormatter, showGrid, showLegend, showDots])
 
-  return (
-    <ChartContainer config={config} className="w-full" style={{ height }}>
-      <RechartsLineChart
-        data={data}
-        margin={{ top: 8, right: 8, bottom: 0, left: -8 }}
-      >
-        {showGrid && (
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        )}
-        <XAxis
-          dataKey={xKey}
-          tick={{ fontSize: 12 }}
-          tickLine={false}
-          axisLine={false}
-        />
-        <YAxis
-          tick={{ fontSize: 12 }}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={yFormatter}
-        />
-        <ChartTooltip content={<ChartTooltipContent />} />
-        {series.map((s) => (
-          <Line
-            key={s.key}
-            type={curveType}
-            dataKey={s.key}
-            name={s.key}
-            stroke={`var(--color-${s.key})`}
-            strokeWidth={2}
-            dot={showDots ? { r: 3, strokeWidth: 0 } : false}
-            activeDot={{ r: 4, strokeWidth: 0 }}
-          />
-        ))}
-      </RechartsLineChart>
-    </ChartContainer>
-  )
+  return <EChartWrapper option={option} height={height} />
 }

@@ -8,14 +8,18 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 
 const PAGE_TITLES: Record<string, string> = {
-  "/dashboard":        "ダッシュボード",
-  "/analytics":        "売上分析",
-  "/products":         "商品管理",
-  "/customers":        "顧客分析",
-  "/reports":          "レポート",
-  "/settings/users":   "ユーザー管理",
-  "/settings/profile": "プロフィール",
-  "/settings":         "設定",
+  "/dashboard":              "エグゼクティブサマリ",
+  "/dashboard/channels":     "チャネル別詳細",
+  "/dashboard/subscription": "サブスク分析",
+  "/dashboard/customers":    "顧客分析",
+  "/dashboard/access":       "アクセス・CVR分析",
+  "/dashboard/gift":         "ギフト売上",
+  "/dashboard/products":     "商品カテゴリ別売上",
+  "/dashboard/email":        "メルマガ分析",
+  "/dashboard/timeseries":   "時系列比較",
+  "/settings/users":         "ユーザー管理",
+  "/settings/profile":       "プロフィール",
+  "/settings":               "設定",
 }
 
 const MONTHS = [

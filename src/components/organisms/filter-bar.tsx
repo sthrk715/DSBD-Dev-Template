@@ -5,42 +5,36 @@ import { RotateCcwIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/molecules/date-range-picker'
 import { FilterSelect } from '@/components/molecules/filter-select'
-import { FilterMultiSelect } from '@/components/molecules/filter-multi-select'
 import { PeriodSelector } from '@/components/molecules/period-selector'
+import { CompareModeToggle } from '@/components/molecules/compare-mode-toggle'
 import { useFilterUrlSync } from '@/hooks/use-filter-url-sync'
 import type { SelectOption } from '@/types/components'
 
 export interface FilterBarProps {
   channelOptions?: SelectOption[]
-  categoryOptions?: SelectOption[]
-  regionOptions?: SelectOption[]
   channelLoading?: boolean
-  categoryLoading?: boolean
   disabled?: boolean
+  showCompareMode?: boolean
 }
 
 export function FilterBar({
   channelOptions = [],
-  categoryOptions = [],
-  regionOptions = [],
   channelLoading = false,
-  categoryLoading = false,
   disabled = false,
+  showCompareMode = false,
 }: FilterBarProps) {
   const store = useFilterUrlSync()
 
   const hasActiveFilters = React.useMemo(() => {
     return (
       store.channel !== '' ||
-      store.categoryL1 !== '' ||
-      store.regions.length > 0 ||
-      store.preset !== 'last30d'
+      store.preset !== 'last30d' ||
+      store.compareMode !== 'calendar'
     )
-  }, [store.channel, store.categoryL1, store.regions, store.preset])
+  }, [store.channel, store.preset, store.compareMode])
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Desktop: 横並び / Tablet: 2列 / Mobile: 1列 */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-end">
         <div className="sm:col-span-2 lg:w-auto">
           <DateRangePicker
@@ -67,31 +61,6 @@ export function FilterBar({
           />
         </div>
 
-        <div className="lg:w-40">
-          <FilterSelect
-            label="カテゴリ"
-            options={categoryOptions}
-            value={store.categoryL1}
-            onChange={store.setCategoryL1}
-            placeholder="すべて"
-            loading={categoryLoading}
-            disabled={disabled}
-            size="sm"
-          />
-        </div>
-
-        <div className="lg:w-52">
-          <FilterMultiSelect
-            label="地域"
-            options={regionOptions}
-            value={store.regions}
-            onChange={store.setRegions}
-            placeholder="すべて"
-            disabled={disabled}
-            size="sm"
-          />
-        </div>
-
         <div className="flex items-end gap-2 lg:w-auto">
           <div>
             <label className="text-xs font-medium text-muted-foreground">
@@ -105,6 +74,21 @@ export function FilterBar({
               />
             </div>
           </div>
+
+          {showCompareMode && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">
+                比較方法
+              </label>
+              <div className="mt-1">
+                <CompareModeToggle
+                  value={store.compareMode}
+                  onChange={store.setCompareMode}
+                  disabled={disabled}
+                />
+              </div>
+            </div>
+          )}
 
           {hasActiveFilters && (
             <Button

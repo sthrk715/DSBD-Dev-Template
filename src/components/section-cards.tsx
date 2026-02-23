@@ -60,39 +60,39 @@ type KpiData = {
 
 const KPI_CARDS: KpiData[] = [
   {
-    title: "総売上",
-    target: "¥15,000,000",
-    active: "¥12,500,000",
-    activePct: 0.83, activeTrend: 5.2,
-    baseline: "¥11,880,000",
-    baselinePct: 0.79,
+    title: "合計売上（4チャネル）",
+    target: "¥85,000,000",
+    active: "¥72,340,000",
+    activePct: 0.85, activeTrend: 12.3,
+    baseline: "¥64,420,000",
+    baselinePct: 0.76,
     color: "#1A1A1A",
   },
   {
-    title: "注文件数",
-    target: "2,000 件",
-    active: "1,847 件",
-    activePct: 0.92, activeTrend: -2.1,
-    baseline: "1,887 件",
-    baselinePct: 0.94,
+    title: "目標達成率",
+    target: "100%",
+    active: "85.1%",
+    activePct: 0.85, activeTrend: 3.2,
+    baseline: "78.5%",
+    baselinePct: 0.79,
     color: "#404040",
   },
   {
-    title: "ユニーク顧客数",
-    target: "1,500 人",
-    active: "1,203 人",
-    activePct: 0.80, activeTrend: 8.7,
-    baseline: "1,107 人",
-    baselinePct: 0.74,
+    title: "前年同月比",
+    target: "+15.0%",
+    active: "+12.3%",
+    activePct: 0.82, activeTrend: 2.1,
+    baseline: "+8.7%",
+    baselinePct: 0.58,
     color: "#666666",
   },
   {
-    title: "平均注文単価",
-    target: "¥8,000",
-    active: "¥6,768",
-    activePct: 0.85, activeTrend: 0.3,
-    baseline: "¥6,748",
-    baselinePct: 0.84,
+    title: "注文件数",
+    target: "12,000 件",
+    active: "10,847 件",
+    activePct: 0.90, activeTrend: 8.5,
+    baseline: "9,987 件",
+    baselinePct: 0.83,
     color: "#8C8C8C",
   },
 ]
@@ -132,7 +132,7 @@ function KpiCard({ data }: { data: KpiData }) {
         {/* Baseline */}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground mb-0.5">Baseline</p>
+            <p className="text-xs text-muted-foreground mb-0.5">前年同月</p>
             <p className="text-base font-semibold text-foreground truncate tabular-nums">
               {data.baseline}
             </p>

@@ -1,11 +1,8 @@
 'use client'
 
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Tooltip,
-} from 'recharts'
+import { useMemo } from 'react'
+import { EChartWrapper } from '@/components/molecules/echart-wrapper'
+import type { EChartsOption } from '@/components/molecules/echart-wrapper'
 
 type SparklinePoint = {
   value: number
@@ -16,55 +13,37 @@ type SparklineProps = {
   data: SparklinePoint[]
   color?: string
   height?: number
-  /** ツールチップの値フォーマッター */
   formatter?: (value: number) => string
 }
 
-// Recharts が content に渡す実際の型 (ValueType 非依存)
-type TooltipEntry = { value?: number | string | (number | string)[] }
-type SparkTooltipProps = { active?: boolean; payload?: TooltipEntry[]; formatter?: (v: number) => string }
-
-// ── シンプルなツールチップ ──────────────────────────────────────
-function SparkTooltip({ active, payload, formatter }: SparkTooltipProps) {
-  if (!active || !payload?.length) {return null}
-  const raw = payload[0]?.value ?? 0
-  const value = typeof raw === 'number' ? raw : 0
-  return (
-    <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded-md shadow-lg">
-      {formatter ? formatter(value) : value.toLocaleString()}
-    </div>
-  )
-}
-
-// ── メインコンポーネント ──────────────────────────────────────────
 export function Sparkline({
   data,
   color = '#1A1A1A',
   height = 48,
-  formatter,
 }: SparklineProps) {
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
-        <Line
-          type="monotone"
-          dataKey="value"
-          stroke={color}
-          strokeWidth={2}
-          dot={false}
-          activeDot={{ r: 3, fill: color, strokeWidth: 0 }}
-        />
-        <Tooltip
-          content={(props) => (
-            <SparkTooltip
-              active={props.active}
-              payload={props.payload as TooltipEntry[]}
-              formatter={formatter}
-            />
-          )}
-          cursor={false}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  )
+  const option = useMemo<EChartsOption>(() => ({
+    grid: { top: 4, right: 4, bottom: 4, left: 4 },
+    xAxis: { type: 'category', show: false, data: data.map((_, i) => i) },
+    yAxis: { type: 'value', show: false },
+    series: [{
+      type: 'line',
+      data: data.map((d) => d.value),
+      smooth: true,
+      symbol: 'none',
+      lineStyle: { width: 2, color },
+      areaStyle: {
+        color: {
+          type: 'linear' as const,
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: `${color}33` },
+            { offset: 1, color: `${color}05` },
+          ],
+        },
+      },
+    }],
+    tooltip: { trigger: 'axis', axisPointer: { type: 'none' } },
+  }), [data, color])
+
+  return <EChartWrapper option={option} height={height} />
 }
