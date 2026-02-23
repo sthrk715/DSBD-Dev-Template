@@ -1,0 +1,34 @@
+# CODEOWNERS - コードオーナー定義
+# 参考: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# デフォルト: Tech Lead
+* @org/tech-leads
+
+# Claude Code制御ファイル — 変更時は必ずTech Lead + セキュリティ担当のレビュー必須
+CLAUDE.md @org/tech-leads @org/security
+.claude/ @org/tech-leads @org/security
+.claudeops/ @org/tech-leads @org/security
+
+# インフラ・IaC
+terraform/ @org/infra-team @org/tech-leads
+Dockerfile @org/infra-team
+cloudbuild.yaml @org/infra-team
+docker-compose.yml @org/infra-team
+
+# セキュリティ関連
+src/lib/auth.ts @org/security @org/tech-leads
+docs/02_design/auth-design.md @org/security
+
+# CI/CD・GitHub設定
+.github/ @org/tech-leads @org/infra-team
+
+# データベース・スキーマ
+prisma/ @org/tech-leads @org/backend
+docs/02_design/bigquery-schema.md @org/tech-leads @org/backend
+
+# テスト戦略
+docs/03_test/ @org/qa-team @org/tech-leads
+
+# リリース・運用
+docs/04_release/ @org/tech-leads @org/infra-team
+docs/05_operation/ @org/infra-team @org/sre-team

@@ -1,0 +1,92 @@
+// Prisma Schema
+// 参照: docs/02_design/auth-design.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== 認証・ユーザー管理 =====
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  name                String?
+  image               String?
+  role                UserRole  @default(VIEWER)
+  emailVerified       DateTime?
+
+  // Email & Password認証用
+  passwordHash        String?   @map("password_hash")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  passwordChangedAt   DateTime? @map("password_changed_at")
+
+  // パスワードリセット
+  resetToken          String?   @map("reset_token")     // SHA-256ハッシュ化して保存
+  resetTokenExpiresAt DateTime? @map("reset_token_expires_at")
+
+  // リレーション
+  accounts            Account[]
+  sessions            Session[]
+  invitedBy           User?     @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedById         String?   @map("invited_by_id")
+  invitees            User[]    @relation("InvitedBy")
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model PasswordHistory {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_histories")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// [TODO: プロジェクト固有のモデルを追加]

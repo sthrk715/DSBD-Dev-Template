@@ -1,0 +1,72 @@
+name: CLAUDE.md Change Review
+
+on:
+  pull_request:
+    paths:
+      - 'CLAUDE.md'
+      - '.claude/**'
+      - '.claudeops/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  claude-md-review:
+    name: Claude Code Config Change Review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check CLAUDE.md changes
+        id: check-changes
+        run: |
+          # 変更差分を取得
+          DIFF=$(git diff origin/${{ github.base_ref }}...HEAD -- CLAUDE.md .claude/ .claudeops/)
+          echo "diff<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # セキュリティ関連の変更を検出
+          SECURITY_CHANGES=false
+          if echo "$DIFF" | grep -qE '(allow|deny|permission|hook|security|secret|token)'; then
+            SECURITY_CHANGES=true
+          fi
+          echo "security_changes=$SECURITY_CHANGES" >> $GITHUB_OUTPUT
+
+      - name: Post warning comment
+        if: steps.check-changes.outputs.security_changes == 'true'
+        run: |
+          cat << 'COMMENT' > comment.md
+          ## :warning: Claude Code設定ファイル変更検出
+
+          このPRはClaude Code制御ファイルに変更を含んでいます。
+          セキュリティ関連の変更が検出されました。
+
+          ### 必須確認事項
+          - [ ] 権限設定の変更が意図的であること
+          - [ ] Hooks設定の変更によるセキュリティ影響を確認
+          - [ ] セキュリティ担当者のレビューを受けること
+
+          ### 変更されたファイル
+          COMMENT
+
+          git diff --name-only origin/${{ github.base_ref }}...HEAD -- CLAUDE.md .claude/ .claudeops/ | while read file; do
+            echo "- \`$file\`" >> comment.md
+          done
+
+          echo "" >> comment.md
+          echo "> **CODEOWNERS**: @org/tech-leads @org/security の承認が必要です" >> comment.md
+
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Require security review
+        if: steps.check-changes.outputs.security_changes == 'true'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "security-review-required"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

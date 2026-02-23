@@ -1,0 +1,6 @@
+# Terraform変数テンプレート
+# コピーして使用: cp terraform.tfvars.example terraform.tfvars
+
+project_id = "your-gcp-project-id"
+region     = "asia-northeast1"
+env        = "dev"

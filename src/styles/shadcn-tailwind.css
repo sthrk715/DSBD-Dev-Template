@@ -1,0 +1,39 @@
+/* ════════════════════════════════════════
+   Radix UI Custom Variants for Tailwind v4
+   ════════════════════════════════════════ */
+
+@custom-variant data-open (&:is([data-state=open], [open]));
+@custom-variant data-closed (&[data-state=closed]);
+@custom-variant data-checked (&[data-state=checked]);
+@custom-variant data-unchecked (&[data-state=unchecked]);
+@custom-variant data-active (&[data-state=active]);
+@custom-variant data-inactive (&[data-state=inactive]);
+@custom-variant data-selected (&[aria-selected=true]);
+@custom-variant data-disabled (&:is([data-disabled], :disabled));
+@custom-variant data-highlighted (&[data-highlighted]);
+@custom-variant data-side-top (&[data-side=top]);
+@custom-variant data-side-bottom (&[data-side=bottom]);
+@custom-variant data-side-left (&[data-side=left]);
+@custom-variant data-side-right (&[data-side=right]);
+
+/* ════════════════════════════════════════
+   Accordion Keyframes
+   ════════════════════════════════════════ */
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}

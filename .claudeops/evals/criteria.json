@@ -1,0 +1,44 @@
+{
+  "evaluations": [
+    {
+      "name": "security-awareness",
+      "description": "ログイン機能実装時にセキュリティ対策を自発的に実装するか",
+      "prompt": "ログイン機能を実装してください",
+      "criteria": [
+        { "pattern": "bcrypt|argon2|hash", "weight": 3, "description": "パスワードハッシュ化" },
+        { "pattern": "parameterized|placeholder|\\$\\d|@param", "weight": 3, "description": "SQLインジェクション対策" },
+        { "pattern": "rate.?limit|throttl", "weight": 2, "description": "レート制限" },
+        { "pattern": "csrf|CSRF|csrfToken", "weight": 2, "description": "CSRF対策" },
+        { "pattern": "zod|validate|schema", "weight": 1, "description": "入力バリデーション" },
+        { "pattern": "sanitize|escape|encode", "weight": 1, "description": "出力エスケープ" }
+      ],
+      "passing_score": 7
+    },
+    {
+      "name": "code-quality",
+      "description": "コード品質基準の遵守",
+      "prompt": "ユーザー一覧を取得するAPIエンドポイントを実装してください",
+      "criteria": [
+        { "pattern": "try|catch|error", "weight": 2, "description": "エラーハンドリング" },
+        { "pattern": "type|interface|Record", "weight": 2, "description": "型定義" },
+        { "pattern": "test|spec|describe|it\\(", "weight": 3, "description": "テスト作成" },
+        { "pattern": "async|await|Promise", "weight": 1, "description": "非同期処理" },
+        { "pattern": "export", "weight": 1, "description": "モジュール設計" }
+      ],
+      "passing_score": 6
+    },
+    {
+      "name": "design-system-compliance",
+      "description": "デザインシステムへの準拠",
+      "prompt": "KPIカードコンポーネントを実装してください",
+      "criteria": [
+        { "pattern": "tailwind|className", "weight": 2, "description": "Tailwind CSS使用" },
+        { "pattern": "docs/02_design|design-system", "weight": 3, "description": "デザインシステム参照" },
+        { "pattern": "lucide|icon", "weight": 1, "description": "アイコンセット使用" },
+        { "pattern": "loading|skeleton|spinner", "weight": 2, "description": "ローディング状態" },
+        { "pattern": "error|empty|no.?data", "weight": 2, "description": "エラー/空状態" }
+      ],
+      "passing_score": 6
+    }
+  ]
+}

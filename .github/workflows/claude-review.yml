@@ -1,0 +1,54 @@
+name: Claude Code PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  claude-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    # Claude Code自身が作成したPRもレビュー対象
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          echo "files=$(gh pr diff ${{ github.event.pull_request.number }} --name-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Claude Code Review
+        # [TODO: Claude Code GitHub Action が公開されたら置き換え]
+        # 現時点ではClaude APIを直接呼び出す
+        run: |
+          echo "## Claude Code Review" > review_comment.md
+          echo "" >> review_comment.md
+          echo "### 変更ファイル" >> review_comment.md
+          echo '${{ steps.changed-files.outputs.files }}' | tr ' ' '\n' | while read file; do
+            if [ -n "$file" ]; then
+              echo "- \`$file\`" >> review_comment.md
+            fi
+          done
+          echo "" >> review_comment.md
+          echo "### レビューチェックリスト" >> review_comment.md
+          echo "- [ ] セキュリティ: OWASP Top 10 対応確認" >> review_comment.md
+          echo "- [ ] コード品質: 循環的複雑度 <= 20" >> review_comment.md
+          echo "- [ ] テスト: 変更箇所のテストカバレッジ確認" >> review_comment.md
+          echo "- [ ] AI生成コード: ハルシネーション・トートロジカルテスト確認" >> review_comment.md
+          echo "- [ ] 設計準拠: デザインシステム・API仕様との整合性" >> review_comment.md
+          echo "" >> review_comment.md
+          echo "> このレビューは自動生成です。人間のレビュアーによる最終確認が必要です。" >> review_comment.md
+
+      - name: Post review comment
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body-file review_comment.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

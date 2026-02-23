@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "github": {
+      "package": "@modelcontextprotocol/server-github",
+      "version": "0.6.2",
+      "minVersion": "0.6.0",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github@0.6.2"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "healthCheck": "list-tools",
+      "lastVerified": "[TODO: 検証日を記入]"
+    },
+    "postgres": {
+      "package": "@modelcontextprotocol/server-postgres",
+      "version": "0.2.1",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres@0.2.1"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      },
+      "healthCheck": "list-resources",
+      "lastVerified": "[TODO: 検証日を記入]"
+    },
+    "filesystem": {
+      "package": "@modelcontextprotocol/server-filesystem",
+      "version": "0.4.0",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@0.4.0", "./src"],
+      "healthCheck": "list-tools",
+      "lastVerified": "[TODO: 検証日を記入]"
+    }
+  },
+  "updatePolicy": {
+    "autoUpdate": false,
+    "checkInterval": "weekly",
+    "approvalRequired": true,
+    "notifyChannel": "#claude-code-ops"
+  }
+}
