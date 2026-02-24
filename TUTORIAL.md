@@ -191,6 +191,57 @@ bodyにはテスト結果とカバレッジ、OWASP監査の結果を含めて�
 
 ---
 
+## Quick Deploy ─ 動作確認用のクイックデプロイ（任意）
+
+Terraform/Cloud SQL/Google OAuthを設定せずに、モックデータで素早くCloud Runにデプロイして動作確認できます。
+
+### 前提条件
+
+```
+🖥️ 自分でやる
+
+# GCPプロジェクトを選択
+gcloud config set project ★your-gcp-project-id
+
+# 必要なAPIを有効化（Cloud Run + Artifact Registry + Cloud Build）
+gcloud services enable \
+  run.googleapis.com \
+  cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com
+```
+
+### デプロイ実行
+
+```
+🖥️ 自分でやる
+
+# ソースベースデプロイ（Docker buildはCloud Build上で実行される）
+gcloud run deploy dsbd-web \
+  --source . \
+  --region asia-northeast1 \
+  --allow-unauthenticated \
+  --set-env-vars="SKIP_AUTH=true,NODE_ENV=production"
+```
+
+- `SKIP_AUTH=true`: NextAuth認証をバイパス（Google OAuth不要）
+- モックデータサービスが自動的に使用される（DATABASE_URL未設定時）
+- デプロイ後のURLで全9タブのダッシュボードが確認可能
+
+> **注意**: このデプロイは認証なしの公開URLになります。デモ確認後は削除するか、本番用のSTGデプロイに移行してください。
+
+### テンプレートに含まれるデプロイ用ファイル
+
+| ファイル | 用途 |
+|---------|------|
+| `Dockerfile` | Multi-stage build（deps → builder → runner） |
+| `.dockerignore` | Cloud Buildへのアップロード除外（node_modules等） |
+| `.gcloudignore` | `gcloud run deploy --source` 時のアップロード除外 |
+| `.npmrc` | npm設定（peer dep衝突時の設定を記載する場所） |
+| `public/.gitkeep` | Next.js standalone buildに必要な空publicディレクトリ |
+| `cloudbuild.yaml` | CI/CD用パイプライン（Secret Manager連携あり） |
+
+---
+
 ## Step 3 ─ STG環境にデプロイする（Phase 3）
 
 ### 3-1. GCPの事前設定（デプロイの前に自分でやる）

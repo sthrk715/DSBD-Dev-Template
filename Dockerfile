@@ -5,7 +5,9 @@
 # --- Stage 1: Dependencies ---
 FROM node:22-alpine AS deps
 WORKDIR /app
+# .npmrc* — peer dep 設定（legacy-peer-deps 等）を Docker ビルドに反映
 COPY package.json package-lock.json* .npmrc* ./
+# Prisma Client 生成（prisma generate）にスキーマファイルが必要
 COPY prisma ./prisma
 RUN npm ci --ignore-scripts
 RUN npx prisma generate || true

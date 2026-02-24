@@ -95,7 +95,7 @@ function FormDatePicker<
                     (d) => date.getTime() === d.getTime()
                   )
                 }}
-                initialFocus
+                autoFocus
               />
             </PopoverContent>
           </Popover>
