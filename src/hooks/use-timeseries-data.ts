@@ -3,7 +3,7 @@ import { apiFetch } from '@/lib/api-client'
 import { useDashboardParams } from '@/hooks/use-dashboard-params'
 import type { TimeseriesData } from '@/lib/data-service/types'
 
-export function useTimeseriesData(comparison = 'yoy', movingAvg = '7') {
+export function useTimeseriesData(comparison = 'yoy', movingAvg = '7d') {
   const params = useDashboardParams()
   const queryParams = { ...params, comparison, movingAvg }
 
