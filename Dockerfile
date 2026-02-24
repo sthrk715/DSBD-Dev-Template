@@ -30,6 +30,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# dumb-init: PID 1 問題を解決し、グレースフルシャットダウンを確保
+RUN apk add --no-cache dumb-init
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
@@ -43,4 +46,4 @@ EXPOSE 8080
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["dumb-init", "node", "server.js"]

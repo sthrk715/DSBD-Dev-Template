@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -36,4 +37,11 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  // Sentry が未設定の場合はビルドログを抑制
+  silent: true,
+  // ソースマップのアップロードは DSN 設定時のみ
+  sourcemaps: {
+    disable: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+  },
+})
