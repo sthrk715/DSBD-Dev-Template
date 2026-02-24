@@ -16,7 +16,7 @@ const SEASON_LABELS: Record<string, string> = {
   chugen: 'お中元',
   keiro: '敬老の日',
   seibo: 'お歳暮',
-  fukubako: '福箱',
+  newyear: 'お正月',
 }
 
 function SimpleKpiCard({ label, kpi, formatter }: { label: string; kpi: KpiValue; formatter: (v: number) => string }) {

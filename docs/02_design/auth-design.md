@@ -164,7 +164,7 @@ callbacks: {
 ```
 ┌──────────────────────────────────────┐
 │        [ロゴ]                         │
-│   Soup Stock Tokyo EC Dashboard      │
+│   Your Company EC Dashboard           │
 │                                      │
 │  ┌──────────────────────────────┐    │
 │  │  [G] Googleでログイン         │    │

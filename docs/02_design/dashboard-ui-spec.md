@@ -88,7 +88,7 @@ interface FilterState {
   period: 'daily' | 'weekly' | 'monthly'
   compareMode: 'calendar' | 'same_dow'
   // タブ固有フィルタ
-  giftSeason: string         // all, mothers_day, chugen, keiro, seibo, fukubako（タブ6用）
+  giftSeason: string         // all, mothers_day, chugen, keiro, seibo, newyear（タブ6用）
   comparison: string          // yoy, mom, wow, same_dow, y2y（タブ9用）
   movingAvg: string           // none, 7d, 28d（タブ9用）
 }

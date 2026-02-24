@@ -17,7 +17,7 @@ export const dashboardParamsSchema = z.object({
 })
 
 export const giftsParamsSchema = dashboardParamsSchema.extend({
-  season: z.enum(['all', 'mothers_day', 'chugen', 'keiro', 'seibo', 'fukubako']).default('all'),
+  season: z.enum(['all', 'mothers_day', 'chugen', 'keiro', 'seibo', 'newyear']).default('all'),
 })
 
 export const timeseriesParamsSchema = dashboardParamsSchema.extend({

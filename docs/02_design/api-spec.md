@@ -167,7 +167,7 @@ Admin専用APIは `requireAdmin()` ヘルパーで権限チェック。
 
 | パラメータ | 型 | 必須 | デフォルト | 説明 |
 |-----------|---|------|-----------|------|
-| season | string | 任意 | all | シーズン（all/mothers_day/chugen/keiro/seibo/fukubako） |
+| season | string | 任意 | all | シーズン（all/mothers_day/chugen/keiro/seibo/newyear） |
 
 **レスポンス:**
 ```json

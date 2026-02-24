@@ -87,9 +87,9 @@ export const APP_CONFIG = {
   /** アプリ名 (TopNavのタイトル等に使用) */
   name: 'EC統合ダッシュボード',
   /** ロゴ内略称 (2〜3文字) */
-  shortName: 'SST',
+  shortName: 'DSBD',
   /** サブタイトル */
-  description: 'Soup Stock Tokyo EC統合ダッシュボード',
+  description: 'EC統合ダッシュボード',
 } as const
 
 /** テーブルのページあたり行数オプション */

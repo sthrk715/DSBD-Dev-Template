@@ -98,7 +98,7 @@ model SalesTarget {
 
 model GiftSeason {
   id        String   @id @default(cuid())
-  key       String   @unique // mothers_day, chugen, keiro, seibo, fukubako
+  key       String   @unique // mothers_day, chugen, keiro, seibo, newyear
   name      String
   startDate DateTime @map("start_date")
   endDate   DateTime @map("end_date")

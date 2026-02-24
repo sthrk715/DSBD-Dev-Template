@@ -31,7 +31,7 @@ function LoginContent() {
         <div className="w-full max-w-sm">
           <div className="flex flex-col items-center justify-center gap-1 mb-8">
             <h1 className="text-xl font-bold text-gray-900 tracking-tight">
-              Soup Stock Tokyo
+              Your Company
             </h1>
             <p className="text-sm text-muted-foreground">EC Dashboard</p>
           </div>
@@ -80,7 +80,7 @@ function LoginContent() {
       </div>
 
       <footer className="py-4 px-6 text-center text-xs text-muted-foreground">
-        <span>&copy; Soup Stock Tokyo. All rights reserved.</span>
+        <span>&copy; Your Company. All rights reserved.</span>
       </footer>
     </div>
   )

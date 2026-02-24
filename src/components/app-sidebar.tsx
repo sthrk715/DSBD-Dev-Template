@@ -71,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <path d="M9 22V14l7-4 7 4v8l-7 4-7-4z" fill="white" fillOpacity="0.9" />
                   <path d="M16 10v12M9 14l7 4 7-4" stroke="#1A1A1A" strokeWidth="1.5" fill="none" />
                 </svg>
-                <span className="text-base font-bold tracking-tight">Soup Stock Tokyo</span>
+                <span className="text-base font-bold tracking-tight">DSBD Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
