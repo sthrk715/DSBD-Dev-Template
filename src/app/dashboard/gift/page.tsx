@@ -1,70 +1,79 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { BarChart } from '@/components/dashboard/charts/BarChart'
 import { AreaLineChart } from '@/components/dashboard/charts/AreaLineChart'
 import { DonutChart } from '@/components/dashboard/charts/DonutChart'
-import { fmtYenMan } from '@/lib/mock-data'
+import { ChartContainer } from '@/components/dashboard/ChartContainer'
+import { DashboardErrorState } from '@/components/dashboard/DashboardErrorState'
+import { useGiftsData } from '@/hooks/use-gifts-data'
+import { fmtYen, fmtYenMan, fmtPct } from '@/lib/format'
+import type { KpiValue } from '@/lib/data-service/types'
 
-// ── KPI ──────────────────────────────────────────────────────
-const GIFT_KPI = [
-  { label: 'シーズン累計売上', value: '¥77,300,000', trend: '+14.2%' },
-  { label: '前年比',           value: '+14.2%',       trend: '前年 ¥67,700,000' },
-  { label: 'eギフト比率',      value: '54.3%',        trend: '+8.5pt' },
-]
+const SEASON_LABELS: Record<string, string> = {
+  mothers_day: '母の日',
+  chugen: 'お中元',
+  keiro: '敬老の日',
+  seibo: 'お歳暮',
+  fukubako: '福箱',
+}
 
-// ── シーズン別売上比較 ───────────────────────────────────────
-const SEASON_SALES = [
-  { season: '母の日',   当年: 1250, 前年: 1080 },
-  { season: 'お中元',   当年: 1820, 前年: 1650 },
-  { season: '敬老の日', 当年: 890,  前年: 780 },
-  { season: 'お歳暮',   当年: 2210, 前年: 1980 },
-  { season: '福箱',     当年: 1560, 前年: 1320 },
-]
-
-// ── シーズン内累積推移（お歳暮シーズン例） ──────────────────
-const CUMULATIVE_DATA = Array.from({ length: 30 }, (_, i) => ({
-  day: `${i + 1}日目`,
-  当年: Math.floor(500000 * (1 - Math.exp(-0.08 * (i + 1))) + i * 50000),
-  前年: Math.floor(450000 * (1 - Math.exp(-0.07 * (i + 1))) + i * 42000),
-}))
-
-// ── eギフト vs 実物ギフト ────────────────────────────────────
-const GIFT_TYPE = [
-  { name: 'eギフト',   value: 42000000, color: '#1A1A1A' },
-  { name: '実物ギフト', value: 35300000, color: '#999999' },
-]
+function SimpleKpiCard({ label, kpi, formatter }: { label: string; kpi: KpiValue; formatter: (v: number) => string }) {
+  const trend = kpi.changeRate ?? 0
+  return (
+    <Card className="shadow-xs">
+      <CardHeader className="pb-0.5 pt-2 px-3">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</CardTitle>
+      </CardHeader>
+      <CardContent className="px-3 pb-3">
+        <p className="text-lg font-bold tabular-nums">{formatter(kpi.value)}</p>
+        {kpi.changeRate !== undefined && (
+          <p className="text-xs text-muted-foreground mt-1">
+            <span className={`font-medium ${trend >= 0 ? 'text-foreground' : 'text-red-600'}`}>{trend >= 0 ? '+' : ''}{trend.toFixed(1)}%</span>
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function GiftPage() {
-  const giftTotal = GIFT_TYPE.reduce((s, d) => s + d.value, 0)
+  const { data, isLoading, isError, refetch } = useGiftsData()
+
+  if (isError) {
+    return <div className="px-4 py-8 lg:px-6"><DashboardErrorState onRetry={() => refetch()} /></div>
+  }
+
+  const donutData = data ? [
+    { name: 'eギフト', value: data.eGiftBreakdown.eGift, color: '#1A1A1A' },
+    { name: '実物ギフト', value: data.eGiftBreakdown.physical, color: '#999999' },
+  ] : []
+  const giftTotal = data ? data.eGiftBreakdown.eGift + data.eGiftBreakdown.physical : 0
 
   return (
-    <div className="flex flex-col gap-4 py-4 md:gap-5 md:py-5">
-      {/* KPIカード */}
-      <div className="@xl/main:grid-cols-3 grid grid-cols-1 gap-4 px-4 lg:px-6">
-        {GIFT_KPI.map((kpi) => (
-          <Card key={kpi.label} className="shadow-xs">
-            <CardHeader className="pb-1 pt-4 px-4">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{kpi.label}</CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-xl font-bold tabular-nums">{kpi.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{kpi.trend}</p>
-            </CardContent>
-          </Card>
-        ))}
+    <div className="flex flex-col gap-3 py-3 md:gap-4 md:py-4">
+      <div className="@xl/main:grid-cols-3 grid grid-cols-1 gap-3 px-4 lg:px-6">
+        {isLoading || !data ? (
+          Array.from({ length: 3 }, (_, i) => <Card key={i} className="shadow-xs"><CardContent className="p-3"><Skeleton className="h-10 w-full" /></CardContent></Card>)
+        ) : (
+          <>
+            <SimpleKpiCard label="シーズン累計売上" kpi={data.kpis.seasonTotal} formatter={fmtYen} />
+            <SimpleKpiCard label="eギフト比率" kpi={data.kpis.eGiftRatio} formatter={fmtPct} />
+            <SimpleKpiCard label="残り日数" kpi={data.kpis.remainingDays} formatter={(v) => `${v}日`} />
+          </>
+        )}
       </div>
 
-      {/* シーズン別売上比較 */}
       <div className="px-4 lg:px-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">シーズン別売上比較</CardTitle>
-            <CardDescription>当年 vs 前年（万円）</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <ChartContainer title="シーズン別売上比較" description="当年 vs 前年（万円）" isLoading={isLoading}>
+          {data && (
             <BarChart
-              data={SEASON_SALES}
+              data={data.seasonComparison.map((d) => ({
+                season: SEASON_LABELS[d.season] ?? d.season,
+                当年: d.currentYear,
+                前年: d.prevYear,
+              }))}
               series={[
                 { key: '当年', label: '当年', color: '#1A1A1A' },
                 { key: '前年', label: '前年', color: '#CCCCCC' },
@@ -74,48 +83,37 @@ export default function GiftPage() {
               showLegend
               height={280}
             />
-          </CardContent>
-        </Card>
+          )}
+        </ChartContainer>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
-        {/* シーズン内累積推移 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">シーズン内累積売上推移</CardTitle>
-            <CardDescription>お歳暮シーズン 当年 vs 前年</CardDescription>
-          </CardHeader>
-          <CardContent>
+      <div className="grid grid-cols-1 gap-3 px-4 lg:grid-cols-2 lg:px-6">
+        <ChartContainer title="シーズン内累積売上推移" description="当年 vs 前年" isLoading={isLoading}>
+          {data && (
             <AreaLineChart
-              data={CUMULATIVE_DATA}
+              data={data.dailyProgress.map((d) => ({ date: d.date, 当年累積: d.cumulative, 前年累積: d.prevYearCumulative }))}
               series={[
-                { key: '当年', label: '当年累積', color: '#1A1A1A' },
-                { key: '前年', label: '前年累積', color: '#B3B3B3' },
+                { key: '当年累積', label: '当年累積', color: '#1A1A1A' },
+                { key: '前年累積', label: '前年累積', color: '#B3B3B3' },
               ]}
-              xKey="day"
+              xKey="date"
               yFormatter={fmtYenMan}
               showLegend
               height={260}
             />
-          </CardContent>
-        </Card>
+          )}
+        </ChartContainer>
 
-        {/* eギフト構成比 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">eギフト vs 実物ギフト</CardTitle>
-            <CardDescription>ギフト種別売上構成比</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <ChartContainer title="eギフト vs 実物ギフト" description="ギフト種別売上構成比" isLoading={isLoading}>
+          {data && (
             <DonutChart
-              data={GIFT_TYPE}
-              centerValue={`¥${(giftTotal / 100000000).toFixed(1)}億`}
+              data={donutData}
+              centerValue={fmtYenMan(giftTotal)}
               centerLabel="ギフト合計"
-              formatter={fmtYenMan}
               height={260}
             />
-          </CardContent>
-        </Card>
+          )}
+        </ChartContainer>
       </div>
     </div>
   )

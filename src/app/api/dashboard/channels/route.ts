@@ -1,13 +1,11 @@
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/api-auth'
 import { getDataService } from '@/lib/data-service'
 import { dashboardParamsSchema, parseParams } from '@/lib/validate-params'
 import { successResponse, errorResponse } from '@/lib/api-response'
 
 export async function GET(request: Request) {
-  const session = await auth()
-  if (!session?.user) {
-    return errorResponse('UNAUTHORIZED', '認証が必要です', 401, 'ログインしてください', '/api/dashboard/channels')
-  }
+  const { error } = await requireAuth()
+  if (error) { return error }
 
   const { searchParams } = new URL(request.url)
   const parsed = parseParams(dashboardParamsSchema, searchParams)

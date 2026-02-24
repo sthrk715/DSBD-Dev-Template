@@ -3,7 +3,6 @@
 import { FilterSelect } from '@/components/molecules/filter-select'
 
 const GIFT_SEASONS = [
-  { value: '', label: 'すべてのシーズン' },
   { value: 'mother', label: '母の日' },
   { value: 'father', label: '父の日' },
   { value: 'obon', label: 'お盆' },

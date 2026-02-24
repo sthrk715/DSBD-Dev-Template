@@ -15,11 +15,11 @@ function SimpleKpiCard({ label, kpi, formatter }: { label: string; kpi: KpiValue
   const trend = kpi.changeRate ?? 0
   return (
     <Card className="shadow-xs">
-      <CardHeader className="pb-1 pt-4 px-4">
+      <CardHeader className="pb-0.5 pt-2 px-3">
         <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</CardTitle>
       </CardHeader>
-      <CardContent className="px-4 pb-4">
-        <p className="text-xl font-bold tabular-nums">{formatter(kpi.value)}</p>
+      <CardContent className="px-3 pb-3">
+        <p className="text-lg font-bold tabular-nums">{formatter(kpi.value)}</p>
         <p className="text-xs text-muted-foreground mt-1">
           <span className={`font-medium ${trend >= 0 ? 'text-foreground' : 'text-red-600'}`}>{trend >= 0 ? '+' : ''}{trend.toFixed(1)}%</span>
         </p>
@@ -36,10 +36,10 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 py-4 md:gap-5 md:py-5">
-      <div className="@xl/main:grid-cols-3 grid grid-cols-1 gap-4 px-4 lg:px-6">
+    <div className="flex flex-col gap-3 py-3 md:gap-4 md:py-4">
+      <div className="@xl/main:grid-cols-3 grid grid-cols-1 gap-3 px-4 lg:px-6">
         {isLoading || !data ? (
-          Array.from({ length: 3 }, (_, i) => <Card key={i} className="shadow-xs"><CardContent className="p-4"><Skeleton className="h-16 w-full" /></CardContent></Card>)
+          Array.from({ length: 3 }, (_, i) => <Card key={i} className="shadow-xs"><CardContent className="p-3"><Skeleton className="h-10 w-full" /></CardContent></Card>)
         ) : (
           <>
             <SimpleKpiCard label="新規顧客売上" kpi={data.kpis.newCustomers} formatter={fmtYen} />
@@ -67,7 +67,7 @@ export default function CustomersPage() {
         </ChartContainer>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
+      <div className="grid grid-cols-1 gap-3 px-4 lg:grid-cols-2 lg:px-6">
         <ChartContainer title="セグメント×チャネル別客単価" description="新規 vs リピーター（円）" isLoading={isLoading}>
           {data && (
             <BarChart

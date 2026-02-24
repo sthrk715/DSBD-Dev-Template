@@ -1,9 +1,18 @@
-import { auth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 
 // 設計書: docs/02_design/permission-management.md
 
+const DEV_SESSION = {
+  user: { id: 'dev-user', name: 'Dev User', email: 'dev@localhost', role: 'ADMIN' as const },
+  expires: new Date(Date.now() + 86400000).toISOString(),
+}
+
 export async function requireAuth() {
+  if (process.env.SKIP_AUTH === 'true') {
+    return { error: null, session: DEV_SESSION }
+  }
+
+  const { auth } = await import('@/lib/auth')
   const session = await auth()
 
   if (!session?.user) {
